@@ -10,7 +10,7 @@ app.use(express.json());
 const PORT = process.env.PORT || 3000;
 
 app.get("/", (req, res) => {
-  res.send("The server is running!");
+  res.send("Backend setup is complete!");
 });
 
 app.listen(PORT, () => {
