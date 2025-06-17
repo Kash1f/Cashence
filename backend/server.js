@@ -46,6 +46,33 @@ app.get("/api/transactions/:userId", async (req, res) => {
   }
 });
 
+app.delete("/api/transactions/:id", async (req, res) => {
+  try {
+
+    //delete the transaction with the given id from the request params
+    const { id } = req.params;
+
+    if(isNaN(parseInt(id))) {
+      return res.status(400).json({ messagee: "Invalid transaction ID" });
+    }
+
+    const deletedTransaction = await sql`
+    DELETE FROM transactions WHERE id = ${id} RETURNING *
+    `;
+
+    if (deletedTransaction.length === 0) {
+      return res.status(404).json({ message: "Transaction not found" }); //if no transaction is deleted, return a 404 error
+    }
+
+    //if the transaction is deleted successfully, display a success message, we dont usually return the response body for delete requests
+    res.status(200).json({ message: "Transaction deleted successfully" });
+    
+  } catch (error) {
+    console.log("Error deleting transaction:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+})
+
 app.post("/api/transactions", async (req, res) => {
   try {
     //get the transaction details from the request body(from the client)
@@ -63,6 +90,7 @@ app.post("/api/transactions", async (req, res) => {
 
     //return the transaction details to the client, 201 means created successfully
     return res.status(201).json(transaction[0]);
+
   } catch (error) {
     console.log("Error processing transaction:", error);
     return res.status(500).json({ message: "Internal server error" });
