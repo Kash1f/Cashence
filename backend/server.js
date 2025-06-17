@@ -31,6 +31,21 @@ async function initDB() {
   }
 }
 
+app.get("/api/transactions/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const transactions = await sql`
+    SELECT * FROM transactions WHERE user_id = ${userId} ORDER BY created_at DESC
+    `;
+
+    res.status(200).json(transactions); //return the transactions of the user
+  } catch (error) {
+    console.log("Error getting transaction:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 app.post("/api/transactions", async (req, res) => {
   try {
     //get the transaction details from the request body(from the client)
@@ -40,7 +55,7 @@ app.post("/api/transactions", async (req, res) => {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-  //insert the transaction into db, list the params required, VALUES means the values to be inserted into the table by the user
+    //insert the transaction into db, list the params required, VALUES means the values to be inserted into the table by the user
     const transaction = await sql`
     INSERT INTO transactions (user_id, title, amount, category)
     VALUES (${user_id}, ${title}, ${amount}, ${category})
