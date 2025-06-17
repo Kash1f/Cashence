@@ -21,6 +21,14 @@ Monitor your personal expenses and manage your budget effortlessly with this ful
 
 ---
 
+## 📁 Folder Structure
+bash
+Copy
+Edit
+/wallet-app
+  ├── /client             # React Native frontend
+  └── /server             # Node.js + Express + PostgreSQL backend
+
 ## 🚀 Getting Started
 
 ### 🔧 Backend Setup (Node.js + PostgreSQL)
