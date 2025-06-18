@@ -46,6 +46,30 @@ app.get("/api/transactions/:userId", async (req, res) => {
   }
 });
 
+app.post("/api/transactions", async (req, res) => {
+  try {
+    //get the transaction details from the request body(from the client)
+    const { title, amount, category, user_id } = req.body;
+
+    if (!title || !category || !user_id || amount === undefined) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    //insert the transaction into db, list the params required, VALUES means the values to be inserted into the table by the user
+    const transaction = await sql`
+    INSERT INTO transactions (user_id, title, amount, category)
+    VALUES (${user_id}, ${title}, ${amount}, ${category})
+    RETURNING *`; //return the inserted transaction
+
+    //return the transaction details to the client, 201 means created successfully
+    return res.status(201).json(transaction[0]);
+
+  } catch (error) {
+    console.log("Error processing transaction:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 app.delete("/api/transactions/:id", async (req, res) => {
   try {
 
@@ -73,29 +97,38 @@ app.delete("/api/transactions/:id", async (req, res) => {
   }
 })
 
-app.post("/api/transactions", async (req, res) => {
-  try {
-    //get the transaction details from the request body(from the client)
-    const { title, amount, category, user_id } = req.body;
+//getting summary of transactions for a user
+app.get("/api/transactions/summary/:userId", async (req, res) => {
+   try {
+    const { userId } = req.params;
 
-    if (!title || !category || !user_id || amount === undefined) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
+    //here we will get the total balance, income and expense of the user to generate a summary of transactions
+    const balanceResult = await sql`
+      SELECT COALESCE(SUM(amount),0) AS balance FROM transactions WHERE user_id = ${userId}
+      `
+    
+    const incomeResult = await sql`
+      SELECT COALESCE(SUM(amount),0) AS income from transactions WHERE user_id = ${userId} AND amount > 0
+    `;
 
-    //insert the transaction into db, list the params required, VALUES means the values to be inserted into the table by the user
-    const transaction = await sql`
-    INSERT INTO transactions (user_id, title, amount, category)
-    VALUES (${user_id}, ${title}, ${amount}, ${category})
-    RETURNING *`; //return the inserted transaction
+    const expensesResult = await sql`
+      SELECT COALESCE(SUM(amount),0) AS expenses from transactions WHERE user_id = ${userId} AND amount < 0
+    `;
 
-    //return the transaction details to the client, 201 means created successfully
-    return res.status(201).json(transaction[0]);
+    //here we extract the calculated values from their respective query results to send the response (balance, income, expenses)
+    res.status(200).json({
+      balance: balanceResult[0].balance, //[0] is used to get the first element of the array
+      income: incomeResult[0].income,
+      expenses: expensesResult[0].expenses
+    });
+
 
   } catch (error) {
-    console.log("Error processing transaction:", error);
+    console.log("Error getting transaction summary:", error);
     return res.status(500).json({ message: "Internal server error" });
+    
   }
-});
+})
 
 //initialize the database, then start the serve
 initDB().then(() => {
