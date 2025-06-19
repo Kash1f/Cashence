@@ -1,12 +1,13 @@
 import express from "express";
 import dotenv from "dotenv";
 import { sql } from "./config/db.js";
+import rateLimiter from "./middleware/rateLimiter.js";
 
 dotenv.config();
 
 const app = express();
 
-//built in middleware to parse JSON bodies
+app.use(rateLimiter); //apply rate limiting middleware to all routes
 app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
@@ -115,7 +116,7 @@ app.get("/api/transactions/summary/:userId", async (req, res) => {
       SELECT COALESCE(SUM(amount),0) AS expenses from transactions WHERE user_id = ${userId} AND amount < 0
     `;
 
-    //here we extract the calculated values from their respective query results to send the response (balance, income, expenses)
+    //here we extract the calculated values from their respective query results to send the response (balance, income, expenses), if the amount is greated than 0 then it is income and if it is less than 0 it is expenses
     res.status(200).json({
       balance: balanceResult[0].balance, //[0] is used to get the first element of the array
       income: incomeResult[0].income,
