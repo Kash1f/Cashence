@@ -1,20 +1,12 @@
-import express from "express";
-import dotenv from "dotenv";
-import { sql } from "./config/db.js";
-import rateLimiter from "./middleware/rateLimiter.js";
-import transactionRoutes from "./routes/transactionRoutes.js";
+import {neon} from "@neondatabase/serverless";
 
-dotenv.config();
+import "dotenv/config";
 
-const app = express();
-
-app.use(rateLimiter); //apply rate limiting middleware to all routes
-app.use(express.json());
-
-const PORT = process.env.PORT || 3000;
+//creates SQL connection using our DB URL, sql is the function we will use to run queries
+export const sql = neon(process.env.DATABASE_URL)
 
 //function to initialize the database and create required tables
-async function initDB() {
+export async function initDB() {
   try {
     //create the 'transactions' table if it doesn't exist
     //this ensures the table is ready before the app handles requests
@@ -32,12 +24,3 @@ async function initDB() {
     process.exit(1); //exit the process if database initialization fails, status code 1 means failure, 0 means success
   }
 }
-
-app.use("/api/transactions", transactionRoutes);
-
-//initialize the database, then start the serve
-initDB().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-  });
-});
