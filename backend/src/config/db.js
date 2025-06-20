@@ -8,8 +8,7 @@ export const sql = neon(process.env.DATABASE_URL)
 //function to initialize the database and create required tables
 export async function initDB() {
   try {
-    //create the 'transactions' table if it doesn't exist
-    //this ensures the table is ready before the app handles requests
+    //create the 'transactions' table if it doesn't exist, this ensures the table is ready before the app handles requests
     await sql`CREATE TABLE IF NOT EXISTS transactions(
       id SERIAL PRIMARY KEY,              -- Unique ID for each transaction
       user_id VARCHAR(255) NOT NULL,      -- ID of the user who made the transaction

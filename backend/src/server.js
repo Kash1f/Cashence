@@ -8,7 +8,7 @@ dotenv.config();
 
 const app = express();
 
-app.use(rateLimiter); //apply rate limiting middleware to all routes
+app.use(rateLimiter); //apply rate limiting as a middleware to all routes
 app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
