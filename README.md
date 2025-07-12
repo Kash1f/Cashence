@@ -1,4 +1,4 @@
-# 💰 Wallet App
+# 💰 Cashence Wallet App
 
 Monitor your personal expenses and manage your budget effortlessly with this full-stack Wallet App! Built using **React Native** for the mobile frontend and **Node.js, Express, and PostgreSQL** for the backend, this app offers a reliable and smooth experience for tracking your financial activities on the go.
 
